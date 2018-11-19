@@ -23,7 +23,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * MiFengApplication.java是液总汇的类。
+ * JiuJiuShouApplication.java是液总汇的类。
  *
  * @author imgod1
  * @version 2.0.0 2018/5/28 10:31
@@ -32,10 +32,10 @@ import okhttp3.Response;
  * @include {@link }
  * @used {@link }
  */
-public class MiFengApplication extends Application {
-    private static final String TAG = "MiFengApplication";
+public class JiuJiuShouApplication extends Application {
+    private static final String TAG = "JiuJiuShouApplication";
 
-    public static MiFengApplication context;
+    public static JiuJiuShouApplication context;
 
     @Override
     public void onCreate() {
@@ -46,7 +46,7 @@ public class MiFengApplication extends Application {
     }
 
     private void initBugly() {
-        Bugly.init(getApplicationContext(), "63a395b9a2", false);
+        Bugly.init(getApplicationContext(), "90e93caf83", false);
     }
 
     private void initOkHttp() {

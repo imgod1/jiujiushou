@@ -8,7 +8,7 @@ import android.support.v4.util.SimpleArrayMap;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.imgod.jiujiushou.app.MiFengApplication;
+import com.imgod.jiujiushou.app.JiuJiuShouApplication;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,7 +61,7 @@ public final class SPUtils {
     }
 
     private SPUtils(String spName) {
-        sp = MiFengApplication.context.getSharedPreferences(spName, Context.MODE_PRIVATE);
+        sp = JiuJiuShouApplication.context.getSharedPreferences(spName, Context.MODE_PRIVATE);
     }
 
     /**
