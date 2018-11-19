@@ -18,7 +18,6 @@ import com.imgod.jiujiushou.request_model.LoginModel;
 import com.imgod.jiujiushou.response_model.LoginResponse;
 import com.imgod.jiujiushou.utils.GsonUtil;
 import com.imgod.jiujiushou.utils.LogUtils;
-import com.imgod.jiujiushou.utils.ModelUtils;
 import com.imgod.jiujiushou.utils.SPUtils;
 import com.imgod.jiujiushou.utils.ToastUtils;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -180,13 +179,11 @@ public class LoginActivity extends BaseActivity {
     private void requestLogin(String phone, String pwd) {
         showProgressDialog();
         LoginModel loginModel = new LoginModel();
-        loginModel.setAction(API.ACTION_LOGIN);
         loginModel.setUsername(phone);
         loginModel.setPassword(pwd);
-        ModelUtils.initModelSign(loginModel);
         OkHttpUtils
                 .postString()
-                .url(API.OPEN_API)
+                .url(API.BASE_URL + API.LOGIN_URL)
                 .content(GsonUtil.GsonString(loginModel))
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
                 .build()
@@ -204,13 +201,13 @@ public class LoginActivity extends BaseActivity {
                         LogUtils.e("onResponse", response);
                         LoginResponse loginResponse = GsonUtil.GsonToBean(response, LoginResponse.class);
                         if (null != loginResponse) {
-                            if (loginResponse.getRet() == Constants.REQUEST_STATUS.SUCCESS) {
-                                Constants.TOKEN = loginResponse.getData();
+                            if (Constants.REQUEST_STATUS.SUCCESS.equals(loginResponse.getRtnCode())) {
+                                Constants.TOKEN = loginResponse.getRtnData().getToken();
                                 ToastUtils.showToastShort(LoginActivity.this, "登录成功");
                                 MainActivity.actionStart(LoginActivity.this);
                                 finish();
                             } else {
-                                ToastUtils.showToastShort(LoginActivity.this, loginResponse.getMsg());
+                                ToastUtils.showToastShort(LoginActivity.this, loginResponse.getRtnMsg());
                             }
                         }
                     }

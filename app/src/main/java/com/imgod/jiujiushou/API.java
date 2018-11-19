@@ -12,11 +12,12 @@ package com.imgod.jiujiushou;
  */
 public interface API {
     //地址
-    String OPEN_API = "http://www.mf178.cn/api/open";
+    String BASE_URL = "http://99shou.cn/api/";
 
     //action类型
-    String ACTION_LOGIN = "login";
-    String ACTION_GET = "get";
-    String ACTION_REPORT = "report";
-    String ACTION_ORDER = "order";
+    String LOGIN_URL = "user-server/user/login";
+    String GET_ORDER_URL = "phonecharge-server/phonecharge/phone/receive";
+    String REPORT_URL = "phonecharge-server/phonecharge/phone/report";
+    String REPORT_CLOSE_URL = "phonecharge-server/phonecharge/phone/close";
+    String GET_DOING_ORDER_URL = "phonecharge-server/phonecharge/phone/orders/doing";
 }

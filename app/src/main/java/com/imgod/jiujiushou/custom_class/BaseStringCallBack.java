@@ -14,7 +14,7 @@ public abstract class BaseStringCallBack extends StringCallback {
     public void onResponse(String response, int id) {
         if (!TextUtils.isEmpty(response)) {
             BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
-            if (baseResponse.getRet() == Constants.REQUEST_STATUS.TOKEN_OUT_TIME && baseResponse.getMsg().equals("用户登录失败")) {
+            if (!Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode()) && baseResponse.getRtnMsg().equals("用户登录失败")) {
                 ToastUtils.showToastShort(MiFengApplication.context, "请重新登陆");
 
                 return;

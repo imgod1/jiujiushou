@@ -1,16 +1,24 @@
 package com.imgod.jiujiushou.request_model;
 
 public class GetTaskModel extends BaseRequestModel {
-    private int operator;
+    private String faceValue;
+    private String channel;
     private String prov;
-    private int amount;
 
-    public int getOperator() {
-        return operator;
+    public String getFaceValue() {
+        return faceValue;
     }
 
-    public void setOperator(int operator) {
-        this.operator = operator;
+    public void setFaceValue(String faceValue) {
+        this.faceValue = faceValue;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 
     public String getProv() {
@@ -19,13 +27,5 @@ public class GetTaskModel extends BaseRequestModel {
 
     public void setProv(String prov) {
         this.prov = prov;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
     }
 }

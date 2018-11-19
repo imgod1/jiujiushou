@@ -25,8 +25,8 @@ import com.imgod.jiujiushou.app.Constants;
 import com.imgod.jiujiushou.request_model.BaseRequestModel;
 import com.imgod.jiujiushou.response_model.BaseResponse;
 import com.imgod.jiujiushou.response_model.RechargingResponse;
+import com.imgod.jiujiushou.response_model.RechargingResponse.RtnDataBean;
 import com.imgod.jiujiushou.utils.BitmapUtils;
-import com.imgod.jiujiushou.utils.DateUtils;
 import com.imgod.jiujiushou.utils.GsonUtil;
 import com.imgod.jiujiushou.utils.LogUtils;
 import com.imgod.jiujiushou.utils.ModelUtils;
@@ -63,7 +63,7 @@ public class RechargingActivity extends BaseActivity {
         initEvents();
     }
 
-    private List<RechargingResponse.DataBean> orderList = new ArrayList<>();
+    private List<RtnDataBean> orderList = new ArrayList<>();
     Toolbar toolbar;
 
     private void initViews() {
@@ -74,14 +74,14 @@ public class RechargingActivity extends BaseActivity {
         srlayout = findViewById(R.id.srlayout);
         recylerview = findViewById(R.id.recylerview);
         recylerview.setLayoutManager(new LinearLayoutManager(mContext));
-        CommonAdapter<RechargingResponse.DataBean> commonAdapter = new CommonAdapter<RechargingResponse.DataBean>(mContext, R.layout.item_recharge_order, orderList) {
+        CommonAdapter<RtnDataBean> commonAdapter = new CommonAdapter<RtnDataBean>(mContext, R.layout.item_recharge_order, orderList) {
             @Override
-            protected void convert(ViewHolder holder, RechargingResponse.DataBean dataBean, final int position) {
+            protected void convert(ViewHolder holder, RtnDataBean dataBean, final int position) {
                 holder.setText(R.id.tv_id, "订单号:" + dataBean.getId());
-                holder.setText(R.id.tv_phone_number, dataBean.getMobile());
+                holder.setText(R.id.tv_phone_number, dataBean.getPhoneNo());
                 holder.setText(R.id.tv_province, dataBean.getProv());
                 holder.setText(R.id.tv_amount, "" + dataBean.getAmount());
-                holder.setText(R.id.tv_date, DateUtils.getFormatDateTimeFromMillSecons(dataBean.getCreate_time() * 1000));
+                holder.setText(R.id.tv_date, dataBean.getAddtime());
 
                 TextView tv_change_photo = holder.getView(R.id.tv_action_1);
                 TextView tv_change_2_failed = holder.getView(R.id.tv_action_2);
@@ -212,7 +212,7 @@ public class RechargingActivity extends BaseActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             mAlertDialog.dismiss();
-                            requestReportTask(Constants.RECHARGE_TYPE.FAILED, "");
+                            requestReportCloseTask();
                         }
                     })
                     .create();
@@ -242,8 +242,8 @@ public class RechargingActivity extends BaseActivity {
 
     //上报充值结果
     private void requestReportTask(int result, String voucher) {
-        RechargingResponse.DataBean dataBean = orderList.get(actionPosition);
-        MainActivity.requestReportTask(dataBean.getId(), dataBean.getMobile(), result, voucher, new StringCallback() {
+        RtnDataBean dataBean = orderList.get(actionPosition);
+        MainActivity.requestReportTask("" + dataBean.getId(), voucher, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
                 ToastUtils.showToastShort(mContext, e.getMessage());
@@ -260,12 +260,41 @@ public class RechargingActivity extends BaseActivity {
     //解析上报充值结果
     private void parseReportResponse(String response) {
         BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
-        if (baseResponse.getRet() == Constants.REQUEST_STATUS.SUCCESS) {
-            ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
             srlayout.setRefreshing(true);
             requestOrderHistroy();
         } else {
-            ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
+        }
+    }
+
+    //上报充值结果
+    private void requestReportCloseTask() {
+        RtnDataBean dataBean = orderList.get(actionPosition);
+        MainActivity.requestReportCloseTask("" + dataBean.getId(), new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                ToastUtils.showToastShort(mContext, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                LogUtils.e(TAG, "requestGetTask onResponse: " + response);
+                parseReportCloseResponse(response);
+            }
+        });
+    }
+
+    //解析上报充值结果
+    private void parseReportCloseResponse(String response) {
+        BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
+            srlayout.setRefreshing(true);
+            requestOrderHistroy();
+        } else {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
         }
     }
 
@@ -276,11 +305,16 @@ public class RechargingActivity extends BaseActivity {
     //获取历史任务
     private void requestOrderHistroy() {
         BaseRequestModel baseRequestModel = new BaseRequestModel();
-        baseRequestModel.setAction(API.ACTION_ORDER);
 
-        ModelUtils.initModelSign(baseRequestModel);
+        String time = "" + System.currentTimeMillis();
+        String sign = ModelUtils.getModelSign(baseRequestModel, time);
 
-        requestOrderHistroyCall = OkHttpUtils.postString().url(API.OPEN_API)
+
+        requestOrderHistroyCall = OkHttpUtils.postString().url(API.BASE_URL + API.GET_DOING_ORDER_URL)
+                .addHeader(Constants.CHANNELID_KEY, Constants.CHANNELID)
+                .addHeader(Constants.TOKEN_KEY, Constants.TOKEN)
+                .addHeader(Constants.TXNTIME_KEY, time)
+                .addHeader(Constants.SIGN_KEY, sign)
                 .content(GsonUtil.GsonString(baseRequestModel))
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
                 .build();
@@ -303,11 +337,11 @@ public class RechargingActivity extends BaseActivity {
     private void parseOrderHirstroyResponse(String response) {
         BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
         orderList.clear();
-        if (baseResponse.getRet() == Constants.REQUEST_STATUS.SUCCESS) {
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
             RechargingResponse rechargingResponse = GsonUtil.GsonToBean(response, RechargingResponse.class);
-            orderList.addAll(rechargingResponse.getData());
+            orderList.addAll(rechargingResponse.getRtnData());
         } else {
-            ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
         }
         recylerview.getAdapter().notifyDataSetChanged();
     }

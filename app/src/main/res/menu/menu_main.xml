@@ -4,7 +4,7 @@
       tools:context="com.imgod.jiujiushou.MainActivity">
     <item
         android:id="@+id/action_histroy"
-        android:icon="@drawable/ic_histroy"
+        android:icon="@drawable/ic_order_list"
         android:orderInCategory="100"
         android:title="历史订单"
         app:showAsAction="ifRoom"/>

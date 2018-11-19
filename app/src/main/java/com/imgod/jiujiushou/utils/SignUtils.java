@@ -1,7 +1,5 @@
 package com.imgod.jiujiushou.utils;
 
-import com.imgod.jiujiushou.app.Constants;
-
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,7 +23,7 @@ public class SignUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String result = stringBuilder.toString() + Constants.MIFENG_SECRET;
+        String result = stringBuilder.toString();
         LogUtils.e("SignUtils", result);
         return result;
     }

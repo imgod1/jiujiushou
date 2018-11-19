@@ -2,27 +2,28 @@ package com.imgod.jiujiushou.response_model;
 
 public class BaseResponse {
 
+
     /**
-     * ret : 0
-     * msg : LOGIN SUCCESS
+     * rtnCode : 000000
+     * rtnMsg : 成功!
      */
 
-    private int ret;
-    private String msg;
+    private String rtnCode;
+    private String rtnMsg;
 
-    public int getRet() {
-        return ret;
+    public String getRtnCode() {
+        return rtnCode;
     }
 
-    public void setRet(int ret) {
-        this.ret = ret;
+    public void setRtnCode(String rtnCode) {
+        this.rtnCode = rtnCode;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getRtnMsg() {
+        return rtnMsg;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setRtnMsg(String rtnMsg) {
+        this.rtnMsg = rtnMsg;
     }
 }

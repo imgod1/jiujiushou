@@ -32,7 +32,6 @@ import com.imgod.jiujiushou.request_model.ReportModel;
 import com.imgod.jiujiushou.response_model.BaseResponse;
 import com.imgod.jiujiushou.response_model.GetTaskResponse;
 import com.imgod.jiujiushou.utils.BitmapUtils;
-import com.imgod.jiujiushou.utils.DateUtils;
 import com.imgod.jiujiushou.utils.GsonUtil;
 import com.imgod.jiujiushou.utils.LogUtils;
 import com.imgod.jiujiushou.utils.MediaPlayUtils;
@@ -57,6 +56,7 @@ import org.jsoup.select.Elements;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.MediaType;
@@ -220,25 +220,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
 
-    private int mRequestOperator = Constants.OPERATOR_TYPE.DEFAULT;
+    private String mRequestOperator = Constants.OPERATOR_TYPE.DEFAULT;
     private String mRequestProvince = "";
-    private int mRequestAmount = 50;
+    private String mRequestAmount = "50";
     private RequestCall requestGetTaskCall;
 
     //获取任务
-    private void requestGetTask(int operator, String prov, int amount) {
+    private void requestGetTask(String operator, String prov, String amount) {
         if (rush_model != RUSH_MODEL_RUSH) {
             return;
         }
         GetTaskModel getTaskModel = new GetTaskModel();
-        getTaskModel.setAction(API.ACTION_GET);
-        getTaskModel.setOperator(operator);
+        getTaskModel.setChannel(operator);
         getTaskModel.setProv(prov);
-        getTaskModel.setAmount(amount);
+        getTaskModel.setFaceValue(amount);
 
-        ModelUtils.initModelSign(getTaskModel);
 
-        requestGetTaskCall = OkHttpUtils.postString().url(API.OPEN_API)
+        String time = "" + System.currentTimeMillis();
+        String sign = ModelUtils.getModelSign(getTaskModel, time);
+        requestGetTaskCall = OkHttpUtils.postString().url(API.BASE_URL + API.GET_ORDER_URL)
+                .addHeader(Constants.CHANNELID_KEY, Constants.CHANNELID)
+                .addHeader(Constants.TOKEN_KEY, Constants.TOKEN)
+                .addHeader(Constants.TXNTIME_KEY, time)
+                .addHeader(Constants.SIGN_KEY, sign)
                 .content(GsonUtil.GsonString(getTaskModel))
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
                 .build();
@@ -256,43 +260,46 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         });
     }
 
-    private GetTaskResponse.DataBean orderDataBean;
+    private GetTaskResponse.RtnDataBean orderDataBean;
 
     //解析获取任务的结果
     private void parseGetTaskResponse(String response) {
         BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
-        if (baseResponse.getRet() == Constants.REQUEST_STATUS.SUCCESS) {
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
             GetTaskResponse getTaskResponse = GsonUtil.GsonToBean(response, GetTaskResponse.class);
-            orderDataBean = getTaskResponse.getData();
-            tv_get_mobile_number.setText("获取号码");
-            item_order.setVisibility(View.VISIBLE);
-            progress_bar.setVisibility(View.GONE);
-            tv_phone_number.setText(orderDataBean.getMobile());
-            tv_province.setText(orderDataBean.getProv());
-            tv_amount.setText(orderDataBean.getAmount());
-            tv_id.setText("订单号:" + orderDataBean.getId());
-            if (!TextUtils.isEmpty(orderDataBean.getTimeout())) {
-                tv_date.setText(DateUtils.getFormatDateTimeFromMillSecons(Long.parseLong(orderDataBean.getTimeout()) * 1000));
-            }
-            tv_action_1.setText("我已充值");
-            tv_action_2.setText("我没充值");
-            tv_action_1.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ToastUtils.showToastShort(mContext, "选择凭证");
-                    choosePhotoWithPermissionCheck();
-                }
-            });
+            List orderList = getTaskResponse.getRtnData();
+            if (null != orderList && orderList.size() > 0) {
+                orderDataBean = getTaskResponse.getRtnData().get(0);
+                tv_get_mobile_number.setText("获取号码");
+                item_order.setVisibility(View.VISIBLE);
+                progress_bar.setVisibility(View.GONE);
+                tv_phone_number.setText(orderDataBean.getPhoneNo());
+                tv_province.setText(orderDataBean.getProv());
+                tv_amount.setText("" + orderDataBean.getPhoneFacevalue());
+                tv_id.setText("订单号:" + orderDataBean.getId());
+//            if (!TextUtils.isEmpty(orderDataBean.getTimeout())) {
+//                tv_date.setText(DateUtils.getFormatDateTimeFromMillSecons(Long.parseLong(orderDataBean.getTimeout()) * 1000));
+//            }
+                tv_action_1.setText("我已充值");
+                tv_action_2.setText("我没充值");
+                tv_action_1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ToastUtils.showToastShort(mContext, "选择凭证");
+                        choosePhotoWithPermissionCheck();
+                    }
+                });
 
-            tv_action_2.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    showAlertDialog();
-                }
-            });
-            showGetOrderSuccessDialog();
+                tv_action_2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        showAlertDialog();
+                    }
+                });
+                showGetOrderSuccessDialog();
+            }
         } else {
-            if (baseResponse.getMsg().contains("平台暂未订单")) {
+            if (baseResponse.getRtnMsg().contains("平台暂未订单")) {
                 item_order.setVisibility(View.GONE);
                 progress_bar.setVisibility(View.VISIBLE);
                 tv_get_mobile_number.postDelayed(new Runnable() {
@@ -300,13 +307,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     public void run() {
                         requestGetTask(mRequestOperator, mRequestProvince, mRequestAmount);
                     }
-                }, 5000);
+                }, 500);
             } else {
                 item_order.setVisibility(View.GONE);
                 progress_bar.setVisibility(View.GONE);
                 rush_model = RUSH_MODEL_NOT_RUSH;
                 tv_get_mobile_number.setText("获取号码");
-                ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+                ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
             }
 
         }
@@ -333,7 +340,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             mAlertDialog.dismiss();
-                            requestReportTask(orderDataBean.getId(), orderDataBean.getMobile(), Constants.RECHARGE_TYPE.FAILED, "");
+                            requestReportCloseTask("" + orderDataBean.getId());
                         }
                     })
                     .create();
@@ -387,8 +394,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private static RequestCall requestReportCall;
 
     //上报充值结果
-    private void requestReportTask(String id, String mobile, int result, String voucher) {
-        requestReportTask(id, mobile, result, voucher, new StringCallback() {
+    private void requestReportTask(String id, String voucher) {
+        requestReportTask(id, voucher, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
                 ToastUtils.showToastShort(mContext, e.getMessage());
@@ -403,17 +410,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     //上报充值结果
-    public static void requestReportTask(String id, String mobile, int result, String voucher, StringCallback stringCallback) {
+    public static void requestReportTask(String id, String voucher, StringCallback stringCallback) {
         ReportModel reportModel = new ReportModel();
-        reportModel.setAction(API.ACTION_REPORT);
-        reportModel.setId(id);
-        reportModel.setMobile(mobile);
-        reportModel.setResult(result);
-        reportModel.setVoucher(voucher);
-        ModelUtils.initModelSign(reportModel);
+        reportModel.setOrderId(id);
+        reportModel.setImgBase64(voucher);
+        String time = "" + System.currentTimeMillis();
+        String sign = ModelUtils.getModelSign(reportModel, time);
 
         String requestContent = GsonUtil.GsonString(reportModel);
-        requestReportCall = OkHttpUtils.postString().url(API.OPEN_API)
+        requestReportCall = OkHttpUtils.postString().url(API.BASE_URL + API.REPORT_URL)
+                .addHeader(Constants.CHANNELID_KEY, Constants.CHANNELID)
+                .addHeader(Constants.TOKEN_KEY, Constants.TOKEN)
+                .addHeader(Constants.TXNTIME_KEY, time)
+                .addHeader(Constants.SIGN_KEY, sign)
                 .content(requestContent)
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
                 .build();
@@ -424,13 +433,64 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     //解析上报充值结果
     private void parseReportResponse(String response) {
         BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
-        if (baseResponse.getRet() == Constants.REQUEST_STATUS.SUCCESS) {
-            ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
             item_order.setVisibility(View.GONE);
         } else {
-            ToastUtils.showToastShort(mContext, baseResponse.getMsg());
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
         }
     }
+
+
+    private static RequestCall requestReportCloseCall;
+
+    //上报充值结果
+    public void requestReportCloseTask(String id) {
+        requestReportCloseTask(id, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                ToastUtils.showToastShort(mContext, e.getMessage());
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                LogUtils.e(TAG, "requestGetTask onResponse: " + response);
+                parseReportCloseResponse(response);
+            }
+        });
+    }
+
+    //上报充值结果
+    public static void requestReportCloseTask(String id, StringCallback stringCallback) {
+        ReportModel reportModel = new ReportModel();
+        reportModel.setOrderId(id);
+        String time = "" + System.currentTimeMillis();
+        String sign = ModelUtils.getModelSign(reportModel, time);
+
+        String requestContent = GsonUtil.GsonString(reportModel);
+        requestReportCloseCall = OkHttpUtils.postString().url(API.BASE_URL + API.REPORT_CLOSE_URL)
+                .addHeader(Constants.CHANNELID_KEY, Constants.CHANNELID)
+                .addHeader(Constants.TOKEN_KEY, Constants.TOKEN)
+                .addHeader(Constants.TXNTIME_KEY, time)
+                .addHeader(Constants.SIGN_KEY, sign)
+                .content(requestContent)
+                .mediaType(MediaType.parse("application/json; charset=utf-8"))
+                .build();
+        requestReportCloseCall.execute(stringCallback);
+    }
+
+
+    //解析上报充值结果
+    private void parseReportCloseResponse(String response) {
+        BaseResponse baseResponse = GsonUtil.GsonToBean(response, BaseResponse.class);
+        if (Constants.REQUEST_STATUS.SUCCESS.equals(baseResponse.getRtnCode())) {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
+            item_order.setVisibility(View.GONE);
+        } else {
+            ToastUtils.showToastShort(mContext, baseResponse.getRtnMsg());
+        }
+    }
+
 
     private String getTelephoneChargeName(String text) {
         if (!TextUtils.isEmpty(text)) {
@@ -504,7 +564,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 public void onClick(View v) {
                     String tag = (String) v.getTag();
                     if (!TextUtils.isEmpty(tag)) {
-                        mRequestOperator = Integer.parseInt(tag);
+                        mRequestOperator = tag;
                         operatorDialog.dismiss();
                         setRowViewContent();
                     }
@@ -551,7 +611,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 public void onClick(View v) {
                     String tag = (String) v.getTag();
                     if (!TextUtils.isEmpty(tag)) {
-                        mRequestAmount = Integer.parseInt(tag);
+                        mRequestAmount = tag;
                         amountDialog.dismiss();
                         setRowViewContent();
                     }
@@ -705,7 +765,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
                     String voucher = BitmapUtils.bitmapToBase64WithTitle(bit, 40);
                     LogUtils.e(TAG, "onActivityResult: " + voucher);
-                    requestReportTask(orderDataBean.getId(), orderDataBean.getMobile(), Constants.RECHARGE_TYPE.SUCCESS, voucher);
+                    requestReportTask("" + orderDataBean.getId(), voucher);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     ToastUtils.showToastShort(mContext, "图片不存在");

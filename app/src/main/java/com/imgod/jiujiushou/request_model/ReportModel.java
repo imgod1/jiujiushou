@@ -12,47 +12,22 @@ package com.imgod.jiujiushou.request_model;
  */
 public class ReportModel extends BaseRequestModel {
 
-    /**
-     * id : 1231231
-     * mobile : 13800138000
-     * result : 1
-     * voucher : data:image/jpg;base64,/9j/4QMZR...
-     */
+   private String orderId;
+   private String imgBase64;
 
-    private String id;
-    private String mobile;
-    private int result;
-    private String voucher;
-
-    public String getId() {
-        return id;
+    public String getOrderId() {
+        return orderId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
-    public String getMobile() {
-        return mobile;
+    public String getImgBase64() {
+        return imgBase64;
     }
 
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
-    public int getResult() {
-        return result;
-    }
-
-    public void setResult(int result) {
-        this.result = result;
-    }
-
-    public String getVoucher() {
-        return voucher;
-    }
-
-    public void setVoucher(String voucher) {
-        this.voucher = voucher;
+    public void setImgBase64(String imgBase64) {
+        this.imgBase64 = imgBase64;
     }
 }

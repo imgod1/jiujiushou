@@ -1,42 +1,73 @@
 package com.imgod.jiujiushou.response_model;
 
+import java.util.List;
+
 public class GetTaskResponse extends BaseResponse {
 
-    /**
-     * data : {"id":22234234,"prov":"江苏","mobile":"13800138000","amount":100,"timeout":15018415241}
-     */
 
-    private DataBean data;
+    private List<RtnDataBean> rtnData;
 
-    public DataBean getData() {
-        return data;
+    public List<RtnDataBean> getRtnData() {
+        return rtnData;
     }
 
-    public void setData(DataBean data) {
-        this.data = data;
+    public void setRtnData(List<RtnDataBean> rtnData) {
+        this.rtnData = rtnData;
     }
 
-    public static class DataBean {
+    public static class RtnDataBean {
         /**
-         * id : 22234234
-         * prov : 江苏
-         * mobile : 13800138000
-         * amount : 100
-         * timeout : 15018415241
+         * id : 4233988
+         * addtime : 2018-11-19 16:44:52
+         * querytime :
+         * prov : 山东省
+         * phoneChannel : 1
+         * phoneFacevalue : 50
+         * phoneNo : 15163950301
+         * phoneBalance : 4.1
+         * phoneBalanceAfter : 4.1
+         * status :
+         * feerate : 98.5
+         * amount : 49.25
+         * note :
          */
 
-        private String id;
+        private long id;
+        private String addtime;
+        private String querytime;
         private String prov;
-        private String mobile;
-        private String amount;
-        private String timeout;
+        private int phoneChannel;
+        private double phoneFacevalue;
+        private String phoneNo;
+        private double phoneBalance;
+        private double phoneBalanceAfter;
+        private String status;
+        private double feerate;
+        private double amount;
+        private String note;
 
-        public String getId() {
+        public long getId() {
             return id;
         }
 
-        public void setId(String id) {
+        public void setId(long id) {
             this.id = id;
+        }
+
+        public String getAddtime() {
+            return addtime;
+        }
+
+        public void setAddtime(String addtime) {
+            this.addtime = addtime;
+        }
+
+        public String getQuerytime() {
+            return querytime;
+        }
+
+        public void setQuerytime(String querytime) {
+            this.querytime = querytime;
         }
 
         public String getProv() {
@@ -47,28 +78,76 @@ public class GetTaskResponse extends BaseResponse {
             this.prov = prov;
         }
 
-        public String getMobile() {
-            return mobile;
+        public int getPhoneChannel() {
+            return phoneChannel;
         }
 
-        public void setMobile(String mobile) {
-            this.mobile = mobile;
+        public void setPhoneChannel(int phoneChannel) {
+            this.phoneChannel = phoneChannel;
         }
 
-        public String getAmount() {
+        public double getPhoneFacevalue() {
+            return phoneFacevalue;
+        }
+
+        public void setPhoneFacevalue(double phoneFacevalue) {
+            this.phoneFacevalue = phoneFacevalue;
+        }
+
+        public String getPhoneNo() {
+            return phoneNo;
+        }
+
+        public void setPhoneNo(String phoneNo) {
+            this.phoneNo = phoneNo;
+        }
+
+        public double getPhoneBalance() {
+            return phoneBalance;
+        }
+
+        public void setPhoneBalance(double phoneBalance) {
+            this.phoneBalance = phoneBalance;
+        }
+
+        public double getPhoneBalanceAfter() {
+            return phoneBalanceAfter;
+        }
+
+        public void setPhoneBalanceAfter(double phoneBalanceAfter) {
+            this.phoneBalanceAfter = phoneBalanceAfter;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public double getFeerate() {
+            return feerate;
+        }
+
+        public void setFeerate(double feerate) {
+            this.feerate = feerate;
+        }
+
+        public double getAmount() {
             return amount;
         }
 
-        public void setAmount(String amount) {
+        public void setAmount(double amount) {
             this.amount = amount;
         }
 
-        public String getTimeout() {
-            return timeout;
+        public String getNote() {
+            return note;
         }
 
-        public void setTimeout(String timeout) {
-            this.timeout = timeout;
+        public void setNote(String note) {
+            this.note = note;
         }
     }
 }

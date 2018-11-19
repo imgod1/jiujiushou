@@ -1,6 +1,6 @@
 package com.imgod.jiujiushou.utils;
 
-import com.imgod.jiujiushou.app.Constants;
+import android.text.TextUtils;
 
 /**
  * OperatorUtils.java是液总汇的类。
@@ -13,16 +13,10 @@ import com.imgod.jiujiushou.app.Constants;
  * @used {@link }
  */
 public class OperatorUtils {
-    public static String getOperatorNameByType(int type) {
-        switch (type) {
-            case Constants.OPERATOR_TYPE.MOBILE:
-                return "移动";
-            case Constants.OPERATOR_TYPE.UNICOM:
-                return "联通";
-            case Constants.OPERATOR_TYPE.TELECOM:
-                return "电信";
-            default:
-                return "不限";
+    public static String getOperatorNameByType(String operator) {
+        if (TextUtils.isEmpty(operator)) {
+            return "不限";
         }
+        return operator;
     }
 }
