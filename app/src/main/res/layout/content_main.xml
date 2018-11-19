@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              app:layout_behavior="@string/appbar_scrolling_view_behavior"
+              tools:context=".MainActivity"
+              tools:showIn="@layout/activity_main">
+
+    <com.imgod.jiujiushou.views.RowView
+        android:id="@+id/rview_operator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <include layout="@layout/line_horizontal"/>
+
+    <com.imgod.jiujiushou.views.RowView
+        android:id="@+id/rview_province"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <include layout="@layout/line_horizontal"/>
+
+    <com.imgod.jiujiushou.views.RowView
+        android:id="@+id/rview_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <include layout="@layout/line_horizontal"/>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/item_order"
+            layout="@layout/item_recharge_order"
+            android:visibility="gone"/>
+
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tv_get_mobile_number"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/row_height"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:text="获取号码"
+            android:textColor="@color/white"
+            android:textSize="16dp"/>
+    </RelativeLayout>
+</LinearLayout>
