@@ -2,6 +2,7 @@ package com.imgod.jiujiushou.app;
 
 import android.app.Application;
 
+import com.imgod.jiujiushou.API;
 import com.imgod.jiujiushou.utils.LogUtils;
 import com.tencent.bugly.Bugly;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -56,7 +57,7 @@ public class JiuJiuShouApplication extends Application {
             @Override
             public synchronized void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
                 cookieStore.put(url, cookies);
-                cookieStore.put(HttpUrl.parse("www.mf178.cn"), cookies);
+                cookieStore.put(HttpUrl.parse(API.BASE_URL), cookies);
                 for (Cookie cookie : cookies) {
                     LogUtils.e(TAG, "save cookie Name:" + cookie.name());
                     LogUtils.e(TAG, "save cookie Value:" + cookie.value());
