@@ -49,11 +49,6 @@ import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 import com.zhy.http.okhttp.request.RequestCall;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
@@ -137,75 +132,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         rview_province.setOnClickListener(this);
         rview_amount.setOnClickListener(this);
         tv_get_mobile_number.setOnClickListener(this);
-    }
-
-
-    private long loopTimes = 0;
-    //获取平台上现在的订单量
-    public static final String ORDER_LIST_URL = "http://www.mf178.cn/customer/order/mytasks";
-
-    private RequestCall requestPlatformOrderSizeCall;
-
-
-    private void requestPlatformOrderSize() {
-        if (rush_model == RUSH_MODEL_RUSH) {
-            loopTimes++;
-
-            requestPlatformOrderSizeCall = OkHttpUtils.get().url(ORDER_LIST_URL).build();
-            requestPlatformOrderSizeCall.execute(new StringCallback() {
-                @Override
-                public void onError(Call call, Exception e, int id) {
-                    if (!call.isCanceled()) {
-                        requestPlatformOrderSize();
-                    }
-                }
-
-                @Override
-                public void onResponse(String response, int id) {//
-                    if (response.contains("平台暂未订单，请稍后再试")) {
-                        ToastUtils.showToastShort(MainActivity.this, "平台暂未订单，请稍后再试");
-                        requestPlatformOrderSize();
-                    } else {
-                        parseOrderSizeResponse(response);
-                    }
-                }
-            });
-        }
-    }
-
-
-    /**
-     * 解析网络请求得到的数据
-     */
-    private void parseOrderSizeResponse(String content) {
-        Document document = null;
-        try {
-            document = Jsoup.parse(content);
-            Elements elements = document.getElementsByClass("table table-striped table-bordered table-advance table-hover text-center");
-            Element element = elements.select("tr").first();
-            Elements tdElements = element.select("td");
-            for (int i = 0; i < tdElements.size(); i++) {
-                Element tempElement = tdElements.get(i);
-                String techphoneChargeName = getTelephoneChargeName(tempElement.text());
-                int orderNum = getTelephoneChargeOrderNum(tempElement.getElementsByClass("text-success").get(0).text());
-                if (techphoneChargeName.equals(selectTechphoneChargeName)) {
-                    LogUtils.e(TAG, techphoneChargeName);
-                    LogUtils.e(TAG, "数量:" + orderNum);
-
-                    if (orderNum > 0) {
-                        //如果该选项还有剩余订单的话,那这个时候应该先发起抢订单的操作
-                        LogUtils.e(TAG, techphoneChargeName + "话费单有库存,请及时去抢单");
-                    } else {
-                        //如果没有数量 那就应该执行刷新操作了
-                        requestPlatformOrderSize();
-                    }
-                    break;
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -299,7 +225,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showGetOrderSuccessDialog();
             }
         } else {
-            if (baseResponse.getRtnMsg().contains("平台暂未订单")) {
+            if ("100005".equals(baseResponse.getRtnCode())) {
                 item_order.setVisibility(View.GONE);
                 progress_bar.setVisibility(View.VISIBLE);
                 tv_get_mobile_number.postDelayed(new Runnable() {
@@ -307,7 +233,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     public void run() {
                         requestGetTask(mRequestOperator, mRequestProvince, mRequestAmount);
                     }
-                }, 500);
+                }, 5000);
             } else {
                 item_order.setVisibility(View.GONE);
                 progress_bar.setVisibility(View.GONE);
