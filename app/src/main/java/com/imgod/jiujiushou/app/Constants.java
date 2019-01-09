@@ -21,6 +21,9 @@ public class Constants {
 
     public interface REQUEST_STATUS {
         String SUCCESS = "000000";
+        String GET_TASK_NO_SOTCK = "100005";//没库存
+        String GET_TASK_ERROR = "010034";//差一点就获取成功
+        String GET_TASK_FREQUENTLY = "899991";//获取订单频繁
     }
 
     //运营商类型

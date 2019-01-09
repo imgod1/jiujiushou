@@ -225,7 +225,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 showGetOrderSuccessDialog();
             }
         } else {
-            if ("100005".equals(baseResponse.getRtnCode())) {
+            String errorCode = baseResponse.getRtnCode();
+            if (Constants.REQUEST_STATUS.GET_TASK_NO_SOTCK.equals(errorCode) ||
+                    Constants.REQUEST_STATUS.GET_TASK_ERROR.equals(errorCode) ||
+                    Constants.REQUEST_STATUS.GET_TASK_FREQUENTLY.equals(errorCode)) {
                 item_order.setVisibility(View.GONE);
                 progress_bar.setVisibility(View.VISIBLE);
                 tv_get_mobile_number.postDelayed(new Runnable() {
@@ -324,11 +327,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         requestReportTask(id, voucher, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
+                hideProgressDialog();
                 ToastUtils.showToastShort(mContext, e.getMessage());
             }
 
             @Override
             public void onResponse(String response, int id) {
+                hideProgressDialog();
                 LogUtils.e(TAG, "requestGetTask onResponse: " + response);
                 parseReportResponse(response);
             }
@@ -512,6 +517,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private BottomSheetDialog amountDialog;
     private View amountDialogView;
+    private TextView tv_10;
+    private TextView tv_20;
     private TextView tv_30;
     private TextView tv_50;
     private TextView tv_100;
@@ -524,6 +531,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         if (null == amountDialog) {
             amountDialog = new BottomSheetDialog(mContext);
             amountDialogView = LayoutInflater.from(mContext).inflate(R.layout.dialog_amount, null, false);
+            tv_10 = amountDialogView.findViewById(R.id.tv_10);
+            tv_20 = amountDialogView.findViewById(R.id.tv_20);
             tv_30 = amountDialogView.findViewById(R.id.tv_30);
             tv_50 = amountDialogView.findViewById(R.id.tv_50);
             tv_100 = amountDialogView.findViewById(R.id.tv_100);
@@ -543,7 +552,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     }
                 }
             };
-
+            tv_10.setOnClickListener(onClickListener);
+            tv_20.setOnClickListener(onClickListener);
             tv_30.setOnClickListener(onClickListener);
             tv_50.setOnClickListener(onClickListener);
             tv_100.setOnClickListener(onClickListener);
@@ -688,12 +698,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 Uri uri = data.getData();
                 LogUtils.e(TAG, "onActivityResult: " + uri.getEncodedPath());
                 try {
+                    showProgressDialog();
                     Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
                     String voucher = BitmapUtils.bitmapToBase64WithTitle(bit, 40);
                     LogUtils.e(TAG, "onActivityResult: " + voucher);
                     requestReportTask("" + orderDataBean.getId(), voucher);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
+                    hideProgressDialog();
                     ToastUtils.showToastShort(mContext, "图片不存在");
                 }
             } else {
